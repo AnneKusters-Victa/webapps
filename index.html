@@ -94,13 +94,17 @@ ul.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .item-main{flex:1;min-width:0;text-align:left;background:none;border:0;padding:8px 10px;display:flex;align-items:center;gap:10px}
 .item-main .txt{display:grid;gap:1px;min-width:0;flex:1}
 .ico{flex:none;width:44px;height:44px;border-radius:12px;background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;font-size:1.65rem;line-height:1}
-.ico.big{width:56px;height:56px;font-size:2rem}
+.ico.big{width:56px;height:56px}
+.ico .pi{width:30px;height:30px;color:var(--accent);stroke-width:1.8}
+.pi.s{width:20px;height:20px;stroke-width:2;display:inline-block;vertical-align:-4px}
+.chip .pi.s{margin-right:4px}
 .icon-row{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
 .icon-row .hint{flex-basis:100%;margin:0}
 .picker{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--card)}
 .picker .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:260px;overflow:auto;margin-top:8px}
 .pick{display:grid;justify-items:center;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 2px;font-size:.72rem;color:var(--muted);min-width:0}
-.pick .e{font-size:1.7rem;line-height:1.1}
+.pick .e{display:grid;place-items:center;height:34px}
+.pick .pi{width:30px;height:30px;color:var(--accent)}
 .pick span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pick[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
 [hidden]{display:none!important}
@@ -120,14 +124,11 @@ ul.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .pill.bad{background:var(--bad-soft);color:var(--bad)}
 .pill.warn{background:var(--warn-soft);color:var(--warn)}
 .tq{font-weight:700;font-size:.8rem;color:var(--muted);white-space:nowrap;margin-left:auto}
-.tile-ico{position:relative;min-height:84px;flex:1;display:grid;place-items:center;font-size:clamp(2.4rem,12vw,3.6rem);line-height:1;padding:4px 0}
+.tile-ico{flex:1;display:grid;place-items:center;padding:4px 0}
+.pi{display:block;stroke-width:1.6;flex:none}
+.tile-ico .pi{width:clamp(46px,15vw,62px);height:clamp(46px,15vw,62px);color:var(--accent)}
 .tile-name{font-weight:600;font-size:.86rem;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em;overflow-wrap:anywhere}
 .tile.empty{opacity:.5}
-.tile-ico img.tphoto{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:12px;padding:2px}
-.dimg{overflow:hidden}
-.dimg img.dphoto{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
-.ico.big{overflow:hidden}
-.ico.big img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
 .searchrow{display:flex;gap:8px;margin-bottom:12px}
 .searchrow input{flex:1;min-width:0;border-radius:16px;min-height:50px;padding:0 16px}
 .filterbtn{flex:none;position:relative;width:50px;min-height:50px;border-radius:16px;border:1px solid var(--line-strong);background:var(--card);display:grid;place-items:center;color:var(--ink)}
@@ -151,7 +152,8 @@ ul.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .dtop h2{overflow-wrap:anywhere}
 .x{flex:none;background:none;border:0;font-size:1.6rem;line-height:1;width:44px;height:44px;margin-right:-8px}
 .dhead{display:flex;gap:14px;align-items:flex-start;margin-top:12px}
-.dimg{flex:none;width:96px;height:96px;border-radius:24px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;font-size:3.2rem;line-height:1}
+.dimg{flex:none;width:96px;height:96px;border-radius:24px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
+.dimg .pi{width:58px;height:58px;color:var(--accent)}
 .dgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;min-width:0}
 .dgrid .k{font-size:.76rem;color:var(--muted);font-weight:600}
 .dgrid .v{font-weight:700;overflow-wrap:anywhere;line-height:1.25}
@@ -1035,7 +1037,7 @@ function itemRow(i){
   const label=[i.name,qb&&('aantal '+qb),pl&&pl.label].filter(Boolean).join(', ');
   return `<li><button class="tile${(+i.qty||0)<=0?' empty':''}" data-a="item-detail" data-id="${esc(i.id)}" aria-label="${esc(label)}">
     <span class="tile-top">${pl?`<span class="pill ${pl.cls}">${esc(pl.t)}</span>`:''}${qb?`<span class="tq">${esc(qb)}</span>`:''}</span>
-    <span class="tile-ico" aria-hidden="true">${visual(i,'tphoto')}</span>
+    <span class="tile-ico" aria-hidden="true">${iconHtml(iconFor(i))}</span>
     <span class="tile-name">${esc(i.name)}</span></button></li>`;
 }
 function sortedItems(){
@@ -1177,7 +1179,7 @@ function logSummary(){
   if(!S.log.length)return '<p class="hint">Hier zie je straks wat je hebt gebruikt of weggegooid. Dat boek je af in het menu van een product.</p>';
   const since=Date.now()-30*864e5,recent=S.log.filter(e=>e.at>=since);
   const used=recent.filter(e=>e.as==='gebruikt').length,waste=recent.filter(e=>e.as==='weggegooid').length;
-  const last=S.log.slice(-5).reverse().map(e=>`<div class="logline"><span aria-hidden="true">${esc(e.icon||'')}</span><span style="margin:0;color:inherit;font-size:inherit;white-space:normal">${esc(e.name)} (${esc(e.as)})</span><span>${esc(agoText(Math.max(0,Math.floor((Date.now()-e.at)/864e5))))}</span></div>`).join('');
+  const last=S.log.slice(-5).reverse().map(e=>`<div class="logline"><span aria-hidden="true">${iconHtml(e.icon||'📦','s')}</span><span style="margin:0;color:inherit;font-size:inherit;white-space:normal">${esc(e.name)} (${esc(e.as)})</span><span>${esc(agoText(Math.max(0,Math.floor((Date.now()-e.at)/864e5))))}</span></div>`).join('');
   return `<p style="margin:0 0 6px"><b>Afgelopen 30 dagen:</b> ${used} gebruikt, ${waste} weggegooid</p>${last}`;
 }
 const MI=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -1207,19 +1209,12 @@ function updateMeerSpy(){
 let spyRaf=0;
 window.addEventListener('scroll',()=>{if(S.view==='meer'&&!spyRaf)spyRaf=requestAnimationFrame(()=>{spyRaf=0;updateMeerSpy();});},{passive:true});
 window.addEventListener('resize',()=>document.documentElement.style.setProperty('--hdr',hdrH()+'px'));
-function photoSection(){
-  const withP=S.items.filter(hasPhoto).length,todo=S.items.filter(i=>i.barcode&&!hasPhoto(i)).length;
-  return `<p class="hint" style="margin-top:0">Producten krijgen een echte foto uit Open Food Facts. Dat gebeurt bij het scannen en hier voor producten die je al had. Alleen de barcode wordt verstuurd. Zonder foto zie je het plaatje op basis van de naam. Je kunt bij een product ook zelf een foto maken.</p>
-  <p style="margin:0 0 8px"><b>${withP}</b> van ${S.items.length} producten hebben een foto${todo?`, bij <b>${todo}</b> kan er nog een worden opgehaald`:''}.</p>
-  <div class="actions"><button class="btn primary" data-a="photos-fetch" ${todo?'':'disabled'}>Foto’s ophalen${todo?` (${todo})`:''}</button></div>`;
-}
 function viewMeer(){
   $('#pageSub').textContent='';
   const grp=(id,body)=>`<section class="msec" id="m-${id}" aria-labelledby="mh-${id}"><h2 class="group" id="mh-${id}">${esc(MEER_PAGES.find(p=>p.id===id).label)}</h2>${body}</section>`;
   return grp('instellingen',`<div class="section"><h3>Basisvoorraad</h3><p class="hint">Dit heb je altijd in huis. Deze ingrediënten tellen bij recepten als aanwezig, ook als ze niet in je voorraad staan. Één per regel of gescheiden door komma’s.</p>
       <textarea id="staples" aria-label="Basisvoorraad">${esc(S.staples.join('\n'))}</textarea>
       <div class="actions"><button class="btn primary" data-a="save-staples">Opslaan</button><button class="btn" data-a="reset-staples">Standaardlijst</button></div></div>
-    <div class="section"><h3>Productfoto's</h3>${photoSection()}</div>
     <div class="section"><h3>Aantal personen</h3><p class="hint">Alle recepten rekenen om naar dit aantal personen. Laat leeg om elk recept in zijn eigen aantal te tonen. In een recept kun je het aantal nog steeds per recept wijzigen.</p>
       <label for="defServ">Standaard aantal personen</label><input id="defServ" type="number" min="1" max="50" inputmode="numeric" placeholder="Zoals in het recept" value="${S.defaultServings||''}">
       <div class="actions"><button class="btn primary" data-a="save-defserv">Opslaan</button></div></div>`)
@@ -1229,7 +1224,7 @@ function viewMeer(){
   +grp('backup',`<div class="section"><h3>Back-up van je gegevens</h3><p class="hint">Maak een back-up van je voorraad, sterrenbeoordelingen, boodschappenlijst, weekplan en instellingen als JSON-bestand, of zet een back-up terug. Je recepten zelf bewaar je via de Mela-export.</p>
       <div class="actions"><button class="btn" data-a="export-stock" ${(S.items.length||Object.keys(S.ratings).length)?'':'disabled'}>Back-up maken</button><button class="btn" data-a="import-stock">Back-up terugzetten</button></div></div>`)
   +grp('afgeboekt',`<div class="section"><h3>Gebruikt en weggegooid</h3>${logSummary()}</div>`)
-  +grp('over',`<div class="section"><h3>Over deze app</h3><p class="hint">Alles wordt bewaard in deze browser op dit apparaat. Productnamen komen van Open Food Facts; alleen de barcode wordt daarvoor verstuurd. Productfoto’s komen van Open Food Facts (licentie CC BY-SA). Cache wissen of een andere browser gebruiken betekent een lege app, dus maak af en toe een back-up.</p></div>`);
+  +grp('over',`<div class="section"><h3>Over deze app</h3><p class="hint">Alles wordt bewaard in deze browser op dit apparaat. Productnamen komen van Open Food Facts; alleen de barcode wordt daarvoor verstuurd. De iconen zijn van Lucide (ISC-licentie) en Tabler Icons (MIT-licentie). Cache wissen of een andere browser gebruiken betekent een lege app, dus maak af en toe een back-up.</p></div>`);
 }
 
 function render(){
@@ -1276,7 +1271,6 @@ function syncSection(){
 }
 function itemForm(it,isNew,existing){
   const sec=it.section||'eten';
-  formPhoto={photo:it.photo||'',photoUrl:it.photoUrl||''};
   if(isNew&&!it.bought)it={...it,bought:todayStr()};
   const unitSel=UNIT_OPTS.map(u=>`<option${(it.unit||'stuks')===u?' selected':''}>${u}</option>`).join('');
   const secSel=SECTIONS.map(s=>`<option value="${s.id}"${sec===s.id?' selected':''}>${s.label}</option>`).join('');
@@ -1286,7 +1280,7 @@ function itemForm(it,isNew,existing){
     <label for="f-section">Soort</label><select id="f-section" name="section">${secSel}</select>
     <label for="f-name">Naam</label><input id="f-name" name="name" type="text" required value="${esc(it.name||'')}">
     <input type="hidden" id="f-icon" name="icon" value="${esc(it.icon||'')}">
-    <div class="icon-row"><span class="ico big" id="icoPrev" aria-hidden="true">${visual(it,'pphoto')}</span><button type="button" class="btn small" data-a="photo-pick">Foto</button><button type="button" class="btn small" data-a="photo-fetch">Foto zoeken</button><button type="button" class="btn small" data-a="photo-clear" id="photoClear" ${hasPhoto(it)?'':'hidden'}>Foto wissen</button><button type="button" class="btn small" data-a="toggle-picker">Afbeelding kiezen</button><button type="button" class="btn small" data-a="icon-auto">Automatisch</button><span class="hint" id="icoMode">${hasPhoto(it)?'Foto':it.icon?'Zelf gekozen':'Automatisch gekozen op naam'}</span><input type="file" id="photoFile" accept="image/*" hidden></div>
+    <div class="icon-row"><span class="ico big" id="icoPrev" aria-hidden="true">${iconHtml(iconFor(it))}</span><button type="button" class="btn small" data-a="toggle-picker">Afbeelding kiezen</button><button type="button" class="btn small" data-a="icon-auto">Automatisch</button><span class="hint" id="icoMode">${it.icon?'Zelf gekozen':'Automatisch gekozen op naam'}</span></div>
     <div class="picker" id="picker" hidden><input type="search" id="iconQ" placeholder="Zoek een afbeelding" aria-label="Zoek een afbeelding"><div class="pgrid" id="pgrid"></div></div>
     <div class="grid2"><div><label for="f-brand">Merk</label><input id="f-brand" name="brand" type="text" value="${esc(it.brand||'')}"></div>
     <div><label for="f-size">Inhoud</label><input id="f-size" name="size" type="text" placeholder="bijv. 400 g" value="${esc(it.size||'')}"></div></div>
@@ -1310,7 +1304,7 @@ function itemForm(it,isNew,existing){
     const exp=secV==='eten'?parseDate(f.get('expiry')):'';
     const bou=secV==='verzorging'?parseDate(f.get('bought')):'';
     if(exp===null||bou===null){toast('Datum niet herkend. Gebruik dd/mm/jjjj');return;}
-    const o={id:f.get('id')||uid(),name:f.get('name').trim(),icon:f.get('icon')||'',photo:formPhoto.photo,photoUrl:formPhoto.photoUrl,section:secV,brand:f.get('brand').trim(),size:f.get('size').trim(),qty:parseFloat(f.get('qty'))||0,unit:f.get('unit'),category:f.get('category'),expiry:exp,bought:bou,barcode:String(f.get('barcode')||'').replace(/\D/g,''),added:+f.get('added')||Date.now()};
+    const o={id:f.get('id')||uid(),name:f.get('name').trim(),icon:f.get('icon')||'',section:secV,brand:f.get('brand').trim(),size:f.get('size').trim(),qty:parseFloat(f.get('qty'))||0,unit:f.get('unit'),category:f.get('category'),expiry:exp,bought:bou,barcode:String(f.get('barcode')||'').replace(/\D/g,''),added:+f.get('added')||Date.now()};
     if(!o.name)return;
     if(o.qty<=0){
       if(S.items.some(x=>x.id===o.id)&&confirm(`${o.name} is op. Uit de voorraad verwijderen?`)){S.items=S.items.filter(x=>x.id!==o.id);await DB.del('items',o.id);closeSheet();render();toast('Verwijderd');return;}
@@ -1407,7 +1401,7 @@ function viewPlan(){
     const iso=addDaysISO(ws,i),d=parseISO(iso);
     const es=S.plan.filter(e=>e.date===iso&&valid(e));
     const list=es.length?`<ul class="list" style="margin-top:2px">${es.map(e=>{
-      if(e.text)return `<li class="pl"><span class="pl-text"><span aria-hidden="true">${planTextIcon(e.text)}</span> ${esc(e.text)}</span><button class="x sm" data-a="plan-del" data-id="${esc(e.id)}" aria-label="Verwijder ${esc(e.text)} uit het weekplan">✕</button></li>`;
+      if(e.text)return `<li class="pl"><span class="pl-text"><span aria-hidden="true">${iconHtml(planTextIcon(e.text),'s')}</span> ${esc(e.text)}</span><button class="x sm" data-a="plan-del" data-id="${esc(e.id)}" aria-label="Verwijder ${esc(e.text)} uit het weekplan">✕</button></li>`;
       const r=S.recipes.find(x=>x.id===e.recipeId);
       return `<li class="pl"><button class="pl-main" data-a="open-recipe" data-id="${esc(r.id)}">${thumbHtml(r)}<span class="tt">${esc(r.title)}${ratingOf(r)?'<br>'+starsInline(ratingOf(r)):''}</span></button><button class="x sm" data-a="plan-del" data-id="${esc(e.id)}" aria-label="Verwijder ${esc(r.title)} uit het weekplan">✕</button></li>`;}).join('')}</ul>`:'';
     return `<section class="day${iso===today?' today':''}" aria-label="${esc(dayLong(iso))}"><div class="dhd"><span><b>${DAYS_NL[i]}</b> <span class="hint">${d.getDate()} ${MONTHS_NL[d.getMonth()]}</span></span><button class="btn small" data-a="plan-pick" data-d="${iso}">+ Toevoegen</button></div>${list}</section>`;
@@ -1429,7 +1423,7 @@ function planPicker(date){
   planTarget=date;
   openSheet(`<h2>${esc(dayLong(date))}</h2>
   <form id="planTextForm"><label for="pt-in" style="margin-top:6px">Eigen tekst</label><div class="searchrow" style="margin-bottom:6px"><input id="pt-in" type="text" placeholder="Bijv. uiteten of restjes" autocomplete="off" maxlength="80"><button class="btn primary" type="submit">Voeg toe</button></div></form>
-  <div class="chips wrapchips" role="group" aria-label="Snelle keuze" style="padding-top:0">${PLAN_QUICK.map(t=>`<button class="chip" data-a="plan-text" data-t="${esc(t)}">${planTextIcon(t)} ${esc(t)}</button>`).join('')}</div>
+  <div class="chips wrapchips" role="group" aria-label="Snelle keuze" style="padding-top:0">${PLAN_QUICK.map(t=>`<button class="chip" data-a="plan-text" data-t="${esc(t)}">${iconHtml(planTextIcon(t),'s')}${esc(t)}</button>`).join('')}</div>
   <label for="ppq">Of kies een recept</label><input id="ppq" type="search" placeholder="Zoek een recept" aria-label="Zoek een recept"><ul class="list" id="ppl" style="margin-top:10px">${pickList('')}</ul><div class="actions"><button class="btn" data-a="close">Annuleren</button></div>`);
 }
 async function addPlanText(date,text){text=String(text||'').trim();if(!text)return false;S.plan.push({id:uid(),date,text});await saveSettings();return true;}
@@ -1483,10 +1477,8 @@ async function fetchHtml(url){
   }
   return null;
 }
-function blobToJpegB64(blob,max,q){return new Promise(res0=>{
-  let done=false;const timer=setTimeout(()=>res(null),8000);const res=v=>{if(done)return;done=true;clearTimeout(timer);res0(v);};
-  const u=URL.createObjectURL(blob),img=new Image();
-  img.onload=()=>{try{const s=Math.min(1,(max||1000)/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.82).split(',')[1]);}catch(e){res(null);}URL.revokeObjectURL(u);};
+function blobToJpegB64(blob){return new Promise(res=>{const u=URL.createObjectURL(blob),img=new Image();
+  img.onload=()=>{try{const s=Math.min(1,1000/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.82).split(',')[1]);}catch(e){res(null);}URL.revokeObjectURL(u);};
   img.onerror=()=>{URL.revokeObjectURL(u);res(null);};img.src=u;});}
 async function fetchImageB64(url){
   for(const px of PROXIES){
@@ -1592,6 +1584,13 @@ function ingSection(){
   <div class="actions" style="margin-top:8px"><button class="btn${s.flagged?' primary':''}" data-a="ing-flags" ${s.flagged?'':'disabled'}>Controleer twijfelgevallen (${s.flagged})</button><button class="btn" data-a="ing-regen">Alles opnieuw herkennen</button></div>`;
 }
 
+/* Line icons: Lucide (ISC licence, (c) Lucide Icons and Contributors) and Tabler Icons (MIT licence, (c) Pawel Kuna),
+   plus a few drawn for this app in the same style. */
+const ICON_SVG={"🫘":"<path d=\"M10.165 6.598C9.954 7.478 9.64 8.36 9 9c-.64.64-1.521.954-2.402 1.165A6 6 0 0 0 8 22c7.732 0 14-6.268 14-14a6 6 0 0 0-11.835-1.402Z\" /><path d=\"M5.341 10.62a4 4 0 1 0 5.279-5.28\" />","🐟":"<path d=\"M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z\" /><path d=\"M18 12v.5\" /><path d=\"M16 17.93a9.77 9.77 0 0 1 0-11.86\" /><path d=\"M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33\" /><path d=\"M10.46 7.26C10.2 5.88 9.17 4.24 8 3h5.8a2 2 0 0 1 1.98 1.67l.23 1.4\" /><path d=\"m16.01 17.93-.23 1.4A2 2 0 0 1 13.8 21H9.5a5.96 5.96 0 0 0 1.49-3.98\" />","🦐":"<path d=\"M10 2a3.28 3.28 0 003.227 1.798l6.17-.561A1 1 0 1119.614 8H8.5a6.44 6.44 0 00-5.63 9.75A6.5 6.5 0 008.5 21c1.38 0 2-.5 2.5-1\" /><path d=\"M10 8a8.5 8.5 0 000 8\" /><path d=\"M11 22c-.5-.5-1.12-1-2.5-1a1 1 0 010-5H12a7 7 0 007-7V8\" /><path d=\"M13 12h.01\" /><path d=\"M8 16c-2 0-4.5-4-4-6\" />","🍗":"<path d=\"M15.4 15.63a7.875 6 135 1 1 6.23-6.23 4.5 3.43 135 0 0-6.23 6.23\" /><path d=\"m8.29 12.71-2.6 2.6a2.5 2.5 0 1 0-1.65 4.65A2.5 2.5 0 1 0 8.7 18.3l2.59-2.59\" />","🥩":"<path d=\"M16.4 13.7A6.5 6.5 0 1 0 6.28 6.6c-1.1 3.13-.78 3.9-3.18 6.08A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3\" /><path d=\"m18.5 6 1.754 3.5a6.48 6.48 0 0 1-1.854 8.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.68-1.66L2.4 16.5\" /><circle cx=\"12.5\" cy=\"8.5\" r=\"2.5\" />","🌭":"<path d=\"M5.5 5.5a2.5 2.5 0 0 0 -2.5 2.5c0 7.18 5.82 13 13 13a2.5 2.5 0 1 0 0 -5a8 8 0 0 1 -8 -8a2.5 2.5 0 0 0 -2.5 -2.5\" /><path d=\"M5.195 5.519l-1.243 -1.989a1 1 0 0 1 .848 -1.53h1.392a1 1 0 0 1 .848 1.53l-1.245 1.99\" /><path d=\"M18.482 18.225l1.989 -1.243a1 1 0 0 1 1.53 .848v1.392a1 1 0 0 1 -1.53 .848l-1.991 -1.245\" />","🥓":"<path d=\"M2.795 16.804c-.789-.79-1.09-2.018-.442-2.928 1.933-2.713 4.414-1.05 6.145-5.378 1.868-4.67 4.608-2.366 6.592-6.107.218-.412.78-.53 1.11-.2l5.005 5.005c.789.79 1.09 2.018.442 2.928-1.933 2.713-4.414 1.05-6.145 5.378-1.868 4.67-4.608 2.366-6.591 6.107-.22.412-.78.53-1.11.2z\" /><path d=\"M4.5 18.5c2-5 5-2 7-7s5-2 7-7\" />","🧀":"<path d=\"M14 11a3 3 0 01-6 0 5 5 0 016 0\" /><path d=\"M14.292 2.436a1.55 1.55 0 011.463-.088l.278.13A10.33 10.33 0 0122 11v8a2 2 0 01-2 2h-1.75a.28.28 0 01-.265-.25 2 2 0 00-3.97 0 .28.28 0 01-.265.25H4a2 2 0 01-2-2v-.75a.28.28 0 01.25-.265 2 2 0 00-.046-3.975.21.21 0 01-.204-.214v-2.678a2 2 0 01.952-1.703l6.062-3.732a.3.3 0 01.27-.002A2.5 2.5 0 0013 3.5l-.002-.104a.3.3 0 01.122-.24z\" /><path d=\"M22 11h-8\" /><path d=\"M8 11H2\" />","🥛":"<path d=\"M8 2h8\" /><path d=\"M9 2v2.789a4 4 0 0 1-.672 2.219l-.656.984A4 4 0 0 0 7 10.212V20a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-9.789a4 4 0 0 0-.672-2.219l-.656-.984A4 4 0 0 1 15 4.788V2\" /><path d=\"M7 15a6.472 6.472 0 0 1 5 0 6.47 6.47 0 0 0 5 0\" />","🥣":"<path d=\"M4 11h16a1 1 0 0 1 1 1v.5c0 1.5 -2.517 5.573 -4 6.5v1a1 1 0 0 1 -1 1h-8a1 1 0 0 1 -1 -1v-1c-1.687 -1.054 -4 -5 -4 -6.5v-.5a1 1 0 0 1 1 -1\" /><path d=\"M8 7c1.657 0 3 -.895 3 -2s-1.343 -2 -3 -2s-3 .895 -3 2s1.343 2 3 2\" /><path d=\"M11 5h9\" />","🥚":"<path d=\"M12 2C8 2 4 8 4 14a8 8 0 0 0 16 0c0-6-4-12-8-12\" />","🥕":"<path d=\"M15 16a1 1 0 0 0-7-7q-4 4-5.987 12.385a.5.5 0 0 0 .602.602Q11 20 15 16l-3-3\" /><path d=\"M15 9q4 4 7 0-3-4-7 0 4-4 0-7-4 3 0 7\" /><path d=\"m8 15-2.58-2.58\" />","🥦":"<path d=\"M10 13a3 3 0 01-2.121-5.121\" /><path d=\"M15.606 14.204c-3.5 1.5-5.899 4.503-8.899 7.503A1 1 0 016 22c-2 0-4-2-4-4a1 1 0 01.293-.707c1.911-1.911 3.823-3.578 5.347-5.441\" /><path d=\"M16.573 14.737A4 4 0 0114 11\" /><path d=\"M7.14 10.907a4 4 0 112.756-7.43A4 4 0 0116.7 4.48a2 2 0 012.82 2.82 4 4 0 011.002 6.805 4 4 0 11-7.51 1.59\" />","🥬":"<path d=\"M2 22c1.25-.987 2.27-1.975 3.9-2.2a5.56 5.56 0 0 1 3.8 1.5 4 4 0 0 0 6.187-2.353 3.5 3.5 0 0 0 3.69-5.116A3.5 3.5 0 0 0 20.95 8 3.5 3.5 0 1 0 16 3.05a3.5 3.5 0 0 0-5.831 1.373 3.5 3.5 0 0 0-5.116 3.69 4 4 0 0 0-2.348 6.155C3.499 15.42 4.409 16.712 4.2 18.1 3.926 19.743 3.014 20.732 2 22\" /><path d=\"M2 22 17 7\" />","🥗":"<path d=\"M19.496 12a2.5 2.5 0 00.399-2.214A2 2 0 0020.32 6.5 2 2 0 0019 3a2 2 0 00-1.5.68 2 2 0 00-3.287.424 2.5 2.5 0 00-3.189 2.06A3 3 0 0012 12l4-4\" /><path d=\"M4 12a1 1 0 00-.99 1.133A9 9 0 0012 21a9 9 0 008.99-7.867A1 1 0 0020 12z\" /><path d=\"M7 21h10\" /><path d=\"M9.85 6.907A3.5 3.5 0 005.05 12\" />","🌶️":"<path d=\"M13 11c0 2.21 -2.239 4 -5 4s-5 -1.79 -5 -4a8 8 0 1 0 16 0a3 3 0 0 0 -6 0\" /><path d=\"M16 8c0 -2 2 -4 4 -4\" />","🍄":"<path d=\"M20 11.1c0 -4.474 -3.582 -8.1 -8 -8.1s-8 3.626 -8 8.1a.9 .9 0 0 0 .9 .9h14.2a.9 .9 0 0 0 .9 -.9\" /><path d=\"M10 12v7a2 2 0 1 0 4 0v-7\" />","🥑":"<path d=\"M13.465 3.464a5 5 0 017.07 0 5 5 0 010 7.072c-1.204 1.203-2.38 2.89-2.614 4.577A8 8 0 118.886 6.08c1.687-.235 3.375-1.41 4.579-2.615\" /><circle cx=\"10\" cy=\"14\" r=\"3\" />","🍋":"<path d=\"M18 4a2 2 0 0 1 1.185 3.611c1.55 2.94 .873 6.917 -1.892 9.682c-2.765 2.765 -6.743 3.442 -9.682 1.892a2 2 0 1 1 -2.796 -2.796c-1.55 -2.94 -.873 -6.917 1.892 -9.682c2.765 -2.765 6.743 -3.442 9.682 -1.892a2 2 0 0 1 1.611 -.815\" />","🍊":"<path d=\"M21.66 17.67a1.08 1.08 0 0 1-.04 1.6A12 12 0 0 1 4.73 2.38a1.1 1.1 0 0 1 1.61-.04z\" /><path d=\"M19.65 15.66A8 8 0 0 1 8.35 4.34\" /><path d=\"m14 10-5.5 5.5\" /><path d=\"M14 17.85V10H6.15\" />","🍎":"<path d=\"M12 6.528V3a1 1 0 0 1 1-1h0\" /><path d=\"M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21\" />","🍌":"<path d=\"M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5\" /><path d=\"M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.11 22 2 22 2 20c0-1.5 1.14-1.55 3.15-2.11Z\" />","🍇":"<path d=\"M22 5V2l-5.89 5.89\" /><circle cx=\"16.6\" cy=\"15.89\" r=\"3\" /><circle cx=\"8.11\" cy=\"7.4\" r=\"3\" /><circle cx=\"12.35\" cy=\"11.65\" r=\"3\" /><circle cx=\"13.91\" cy=\"5.85\" r=\"3\" /><circle cx=\"18.15\" cy=\"10.09\" r=\"3\" /><circle cx=\"6.56\" cy=\"13.2\" r=\"3\" /><circle cx=\"10.8\" cy=\"17.44\" r=\"3\" /><circle cx=\"5\" cy=\"19\" r=\"3\" />","🫐":"<path d=\"M2 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z\" /><path d=\"M12 17a5 5 0 0 0 10 0c0-2.76-2.5-5-5-3-2.5-2-5 .24-5 3Z\" /><path d=\"M7 14c3.22-2.91 4.29-8.75 5-12 1.66 2.38 4.94 9 5 12\" /><path d=\"M22 9c-4.29 0-7.14-2.33-10-7 5.71 0 10 4.67 10 7Z\" />","🍉":"<path d=\"M20 10c0 5.523 -4.477 10 -10 10a9.967 9.967 0 0 1 -6.984 -2.842l4.343 -4.153a4 4 0 0 0 5.76 -5.51l4.342 -4.153a9.963 9.963 0 0 1 2.539 6.658\" />","🍜":"<path d=\"M4 11h16a1 1 0 0 1 1 1v.5c0 1.5 -2.517 5.573 -4 6.5v1a1 1 0 0 1 -1 1h-8a1 1 0 0 1 -1 -1v-1c-1.687 -1.054 -4 -5 -4 -6.5v-.5a1 1 0 0 1 1 -1\" /><path d=\"M19 7l-14 1\" /><path d=\"M19 2l-14 3\" />","🍞":"<path d=\"M18 4a3 3 0 0 1 2 5.235v8.765a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-8.764a3 3 0 0 1 1.824 -5.231h12.176v-.005\" />","🥖":"<path d=\"M5.628 11.283l5.644 -5.637c2.665 -2.663 5.924 -3.747 8.663 -1.205l.188 .181a2.987 2.987 0 0 1 0 4.228l-11.287 11.274a3 3 0 0 1 -4.089 .135l-.143 -.135c-2.728 -2.724 -1.704 -6.117 1.024 -8.841\" /><path d=\"M9.5 7.5l1.5 3.5\" /><path d=\"M6.5 10.5l1.5 3.5\" /><path d=\"M12.5 4.5l1.5 3.5\" />","🍕":"<path d=\"m12 14-1 1\" /><path d=\"m13.75 18.25-1.25 1.42\" /><path d=\"M17.775 5.654a15.68 15.68 0 0 0-12.121 12.12\" /><path d=\"M18.8 9.3a1 1 0 0 0 2.1 7.7\" /><path d=\"M21.964 20.732a1 1 0 0 1-1.232 1.232l-18-5a1 1 0 0 1-.695-1.232A19.68 19.68 0 0 1 15.732 2.037a1 1 0 0 1 1.232.695z\" />","🥐":"<path d=\"M10.2 18H4.774a1.5 1.5 0 0 1-1.352-.97 11 11 0 0 1 .132-6.487\" /><path d=\"M18 10.2V4.774a1.5 1.5 0 0 0-.97-1.352 11 11 0 0 0-6.486.132\" /><path d=\"M18 5a4 3 0 0 1 4 3 2 2 0 0 1-2 2 10 10 0 0 0-5.139 1.42\" /><path d=\"M5 18a3 4 0 0 0 3 4 2 2 0 0 0 2-2 10 10 0 0 1 1.42-5.14\" /><path d=\"M8.709 2.554a10 10 0 0 0-6.155 6.155 1.5 1.5 0 0 0 .676 1.626l9.807 5.42a2 2 0 0 0 2.718-2.718l-5.42-9.807a1.5 1.5 0 0 0-1.626-.676\" />","🍪":"<path d=\"M11 17h.01\" /><path d=\"M11.496 2c.324-.016.558.292.529.615a4 4 0 004.235 4.368.713.713 0 01.758.757 4 4 0 004.366 4.237c.323-.03.63.204.614.527a10 10 0 01-2.915 6.566A1 1 0 114.93 4.918 10 10 0 0111.496 2\" /><path d=\"M12 12h.01\" /><path d=\"M16 16h.01\" /><path d=\"M16 3h.01\" /><path d=\"M21 4h.01\" /><path d=\"M21 8h.01\" /><path d=\"M7 14h.01\" /><path d=\"M9 8h.01\" />","🍰":"<path d=\"M16 13H3\" /><path d=\"M16 17H3\" /><path d=\"m7.2 7.9-3.388 2.5A2 2 0 0 0 3 12.01V20a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-8.654c0-2-2.44-6.026-6.44-8.026a1 1 0 0 0-1.082.057L10.4 5.6\" /><circle cx=\"9\" cy=\"7\" r=\"2\" />","🍫":"<path d=\"M12 2v10\" /><path d=\"M17 12V4.4a.4.4 0 00-.4-.4A1.6 1.6 0 0115 2.4a.4.4 0 00-.4-.4H9a2 2 0 00-2 2v8\" /><path d=\"M5 14a2 2 0 012-2h10a2 2 0 012 2v2a1 1 0 01-1 1 2 2 0 01-.9-.203l-1.2-.594a2 2 0 00-1.8 0l-1.2.594a2 2 0 01-1.8 0l-1.2-.594a2 2 0 00-1.8 0l-1.2.594a2 2 0 01-.9.198A1 1 0 015 16z\" /><path d=\"M7 16.748V20a2 2 0 002 2h6a2 2 0 002-2v-3.252\" /><path d=\"M7 7h10\" />","🍬":"<path d=\"M10 7v10.9\" /><path d=\"M14 6.1V17\" /><path d=\"M16 7V3a1 1 0 0 1 1.707-.707 2.5 2.5 0 0 0 2.152.717 1 1 0 0 1 1.131 1.131 2.5 2.5 0 0 0 .717 2.152A1 1 0 0 1 21 8h-4\" /><path d=\"M16.536 7.465a5 5 0 0 0-7.072 0l-2 2a5 5 0 0 0 0 7.07 5 5 0 0 0 7.072 0l2-2a5 5 0 0 0 0-7.07\" /><path d=\"M8 17v4a1 1 0 0 1-1.707.707 2.5 2.5 0 0 0-2.152-.717 1 1 0 0 1-1.131-1.131 2.5 2.5 0 0 0-.717-2.152A1 1 0 0 1 3 16h4\" />","🍿":"<path d=\"M18 8a2 2 0 0 0 0-4 2 2 0 0 0-4 0 2 2 0 0 0-4 0 2 2 0 0 0-4 0 2 2 0 0 0 0 4\" /><path d=\"M10 22 9 8\" /><path d=\"m14 22 1-14\" /><path d=\"M20 8c.5 0 .9.4.8 1l-2.6 12c-.1.5-.7 1-1.2 1H7c-.6 0-1.1-.4-1.2-1L3.2 9c-.1-.6.3-1 .8-1Z\" />","🌿":"<path d=\"M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3\" /><path d=\"M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4\" /><path d=\"M5 21h14\" />","🧂":"<path d=\"M12 13v.01\" /><path d=\"M10 16v.01\" /><path d=\"M14 16v.01\" /><path d=\"M7.5 8h9l-.281 -2.248a2 2 0 0 0 -1.985 -1.752h-4.468a2 2 0 0 0 -1.986 1.752l-.28 2.248\" /><path d=\"M7.5 8l-1.612 9.671a2 2 0 0 0 1.973 2.329h8.278a2 2 0 0 0 1.973 -2.329l-1.612 -9.671\" />","🍛":"<path d=\"M2 12h20\" /><path d=\"M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\" /><path d=\"m4 8 16-4\" /><path d=\"m8.86 6.78-.45-1.81a2 2 0 0 1 1.45-2.43l1.94-.48a2 2 0 0 1 2.43 1.46l.45 1.8\" />","🍲":"<path d=\"M11.248 3c.273.1.808.53.747 1.36-.05.83-.938 1.2-.989 2.02-.06.78.333 1.24.727 1.62\" /><path d=\"M16.252 3c.268.1.794.53.745 1.36-.06.83-.923 1.2-.993 2.02-.05.78.338 1.24.725 1.62\" /><path d=\"M19.5 12 22 6\" /><path d=\"M4 12a1 1 0 00-.99 1.133A9 9 0 0012 21a9 9 0 008.99-7.867A1 1 0 0020 12z\" /><path d=\"M6.252 3c.268.1.794.53.745 1.36-.06.83-.923 1.2-.993 2.02-.05.78.338 1.24.735 1.62\" /><path d=\"M7 21h10\" />","☕":"<path d=\"M10 2v2\" /><path d=\"M14 2v2\" /><path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\" /><path d=\"M6 2v2\" />","🍵":"<path d=\"M10.29 3h3.42a2 2 0 0 1 1.988 1.78l1.555 14a2 2 0 0 1 -1.988 2.22h-6.53a2 2 0 0 1 -1.988 -2.22l1.555 -14a2 2 0 0 1 1.988 -1.78\" /><path d=\"M7.47 12.5l-4.257 -5.019a.899 .899 0 0 1 .69 -1.481h13.09a3 3 0 0 1 3.007 3v3c0 1.657 -1.346 3 -3.007 3\" /><path d=\"M7 17h10\" />","🥤":"<path d=\"m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8\" /><path d=\"M5 8h14\" /><path d=\"M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0\" /><path d=\"m12 8 1-6h2\" />","💧":"<path d=\"M5.116 4.104A1 1 0 0 1 6.11 3h11.78a1 1 0 0 1 .994 1.105L17.19 20.21A2 2 0 0 1 15.2 22H8.8a2 2 0 0 1-2-1.79z\" /><path d=\"M6 12a5 5 0 0 1 6 0 5 5 0 0 0 6 0\" />","🍷":"<path d=\"M8 22h8\" /><path d=\"M7 10h10\" /><path d=\"M12 15v7\" /><path d=\"M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z\" />","🍺":"<path d=\"M17 11h1a3 3 0 0 1 0 6h-1\" /><path d=\"M9 12v6\" /><path d=\"M13 12v6\" /><path d=\"M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.72.5-2.5.5a2.5 2.5 0 0 1 0-5c.78 0 1.57.5 2.5.5S9.44 2 11 2s2 1.5 3 1.5 1.72-.5 2.5-.5a2.5 2.5 0 0 1 0 5c-.78 0-1.5-.5-2.5-.5Z\" /><path d=\"M5 8v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8\" />","🍨":"<path d=\"m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11\" /><path d=\"M17 7A5 5 0 0 0 7 7\" /><path d=\"M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4\" />","💊":"<path d=\"m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z\" /><path d=\"m8.5 8.5 7 7\" />","🐾":"<circle cx=\"11\" cy=\"4\" r=\"2\" /><circle cx=\"18\" cy=\"8\" r=\"2\" /><circle cx=\"20\" cy=\"16\" r=\"2\" /><path d=\"M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z\" />","🧴":"<path d=\"M15 18v3a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-3\" /><path d=\"M17 2a2 2 0 0 1 1.6 3.2A8 8 0 0 0 17 10v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6a8 8 0 0 0-1.6-4.8A2 2 0 0 1 7 2z\" /><path d=\"M7 10a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0\" />","🪥":"<path d=\"M15 11c-2 2-4 2-6 4l-7 7\" /><path d=\"m22 4-7.414 7.414-2-2A2 2 0 0114 6c0-.512.196-1.024.586-1.414A2 2 0 0116 4a2 2 0 013.262-1.552l2.152 2.138\" />","🪒":"<path d=\"M7 3h10v4h-10l0 -4\" /><path d=\"M12 7v4\" /><path d=\"M12 11a2 2 0 0 1 2 2v6a2 2 0 1 1 -4 0v-6a2 2 0 0 1 2 -2\" />","🧼":"<path d=\"M10.5 2v4\" /><path d=\"M14 2H7a2 2 0 0 0-2 2\" /><path d=\"M19.29 14.76A6.67 6.67 0 0 1 17 11a6.6 6.6 0 0 1-2.29 3.76c-1.15.92-1.71 2.04-1.71 3.19 0 2.22 1.8 4.05 4 4.05s4-1.83 4-4.05c0-1.16-.57-2.26-1.71-3.19\" /><path d=\"M9.607 21H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h7V7a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3\" />","🧺":"<path d=\"M3 6h3\" /><path d=\"M17 6h.01\" /><rect width=\"18\" height=\"20\" x=\"3\" y=\"2\" rx=\"2\" /><circle cx=\"12\" cy=\"13\" r=\"5\" /><path d=\"M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5\" />","🚽":"<path d=\"M7 12h13a1 1 0 0 1 1 1 5 5 0 0 1-5 5h-.598a.5.5 0 0 0-.424.765l1.544 2.47a.5.5 0 0 1-.424.765H5.402a.5.5 0 0 1-.424-.765L7 18\" /><path d=\"M8 18a5 5 0 0 1-5-5V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8\" />","🧻":"<path d=\"M3 10a3 7 0 1 0 6 0a3 7 0 1 0 -6 0\" /><path d=\"M21 10c0 -3.866 -1.343 -7 -3 -7\" /><path d=\"M6 3h12\" /><path d=\"M21 10v10l-3 -1l-3 2l-3 -3l-3 2v-10\" /><path d=\"M6 10h.01\" />","🧹":"<path d=\"M13.5 10.5 22 2\" /><path d=\"M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204z\" /><path d=\"m5 18 2-2\" /><path d=\"m7.699 10.7 5.602 5.601\" />","🗑️":"<path d=\"M10 11v6\" /><path d=\"M14 11v6\" /><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /><path d=\"M3 6h18\" /><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />","🔋":"<path d=\"M 22 14 L 22 10\" /><rect x=\"2\" y=\"6\" width=\"16\" height=\"12\" rx=\"2\" />","💡":"<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\" /><path d=\"M9 18h6\" /><path d=\"M10 22h4\" />","🕯️":"<path d=\"M9 21h6v-10a1 1 0 0 0 -1 -1h-4a1 1 0 0 0 -1 1l0 10\" /><path d=\"M12 2l1.465 1.638a2 2 0 1 1 -3.015 .099l1.55 -1.737\" />","🔧":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z\" />","🧊":"<path d=\"m10 20-1.25-2.5L6 18\" /><path d=\"M10 4 8.75 6.5 6 6\" /><path d=\"m14 20 1.25-2.5L18 18\" /><path d=\"m14 4 1.25 2.5L18 6\" /><path d=\"m17 21-3-6h-4\" /><path d=\"m17 3-3 6 1.5 3\" /><path d=\"M2 12h6.5L10 9\" /><path d=\"m20 10-1.5 2 1.5 2\" /><path d=\"M22 12h-6.5L14 15\" /><path d=\"m4 10 1.5 2L4 14\" /><path d=\"m7 21 3-6-1.5-3\" /><path d=\"m7 3 3 6h4\" />","📦":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\" /><path d=\"M12 22V12\" /><polyline points=\"3.29 7 12 12 20.71 7\" /><path d=\"m7.5 4.27 9 5.15\" />","🏠":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />","🍽️":"<path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\" /><path d=\"M7 2v20\" /><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\" />","♻️":"<path d=\"M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5\" /><path d=\"M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12\" /><path d=\"m14 16-3 3 3 3\" /><path d=\"M8.293 13.596 7.196 9.5 3.1 10.598\" /><path d=\"m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843\" /><path d=\"m13.378 9.633 4.096 1.098 1.097-4.096\" />","🥡":"<path d=\"M12 22v-9\" /><path d=\"M15.17 2.21a1.67 1.67 0 0 1 1.63 0L21 4.57a1.93 1.93 0 0 1 0 3.36L8.82 14.79a1.655 1.655 0 0 1-1.64 0L3 12.43a1.93 1.93 0 0 1 0-3.36z\" /><path d=\"M20 13v3.87a2.06 2.06 0 0 1-1.11 1.83l-6 3.08a1.93 1.93 0 0 1-1.78 0l-6-3.08A2.06 2.06 0 0 1 4 16.87V13\" /><path d=\"M21 12.43a1.93 1.93 0 0 0 0-3.36L8.83 2.2a1.64 1.64 0 0 0-1.63 0L3 4.57a1.93 1.93 0 0 0 0 3.36l12.18 6.86a1.636 1.636 0 0 0 1.63 0z\" />","👥":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><path d=\"M16 3.128a4 4 0 0 1 0 7.744\" /><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /><circle cx=\"9\" cy=\"7\" r=\"4\" />","📝":"<path d=\"M13 21h8\" /><path d=\"m15 5 4 4\" /><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" />","🥫":"<path d=\"M21 10.5a9 2.5 0 01-18 0v8a9 2.5 0 0018 0z\" /><path d=\"M21 10.5A9 2.5 25.32 004.59 3.47 9 2.5 25.32 0021 10.5\" /><path d=\"M3 10.5a9 2.5 0 016.527-2.405\" /><path d=\"M9 16.858a31 31 0 006 0\" />","·":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\" /><path d=\"M12 22V12\" /><polyline points=\"3.29 7 12 12 20.71 7\" /><path d=\"m7.5 4.27 9 5.15\" />","🍅":"<ellipse cx=\"12\" cy=\"13.5\" rx=\"8\" ry=\"7\"/><path d=\"M12 6.5L9.5 4M12 6.5l2.5-2.5M12 6.5L8 7.5M12 6.5l4 1M12 6.5V3.5\"/>","🧈":"<rect x=\"3\" y=\"10\" width=\"14\" height=\"9\" rx=\"1\"/><path d=\"M3 10l3-4h14l-3 4M20 6v9l-3 4\"/>","🥥":"<path d=\"M3.5 11.5a8.5 8.5 0 0 0 17 0z\"/><ellipse cx=\"12\" cy=\"11.5\" rx=\"8.5\" ry=\"3\"/><path d=\"M9.5 15h.01M14.5 15h.01M12 17.5h.01\"/>","🥜":"<path d=\"M6.5 8c-2.5 0-4 1.8-4 4s1.5 4 4 4c1.7 0 2.5-.8 3.5-1.5s2.3-.5 3.5 0c1 .6 1.8 1.5 3.5 1.5 2.5 0 4-1.8 4-4s-1.5-4-4-4c-1.7 0-2.5.8-3.5 1.5s-2.3.5-3.5 0C9 8.8 8.2 8 6.5 8z\"/><path d=\"M7 12h.01M17 12h.01\"/>","🥔":"<path d=\"M5 11.5c0-4 4-6.5 8-6 4.5.5 7 4 6 8-1 4-5 6.5-9.5 6C5.5 19 5 14.5 5 11.5z\"/><path d=\"M10 11h.01M14.5 14h.01M12 8.5h.01\"/>","🍟":"<path d=\"M6 11h12l-1.5 10h-9z\"/><path d=\"M8.5 11L8 5M12 11V3.5M15.5 11L16 5\"/>","🧅":"<path d=\"M12 3.5c.5 2 1 2.5 2.5 3.8C17 9 19 11 19 14a7 7 0 0 1-14 0c0-3 2-5 4.5-6.7C11 6 11.5 5.5 12 3.5z\"/><path d=\"M12 8c-1.5 3-1.5 9 0 12M12 8c1.5 3 1.5 9 0 12\"/>","🧄":"<path d=\"M12 3c.4 2 1 3 2.3 4.2C16.8 9.2 19 11.5 19 14.5A7 7 0 0 1 5 14.5c0-3 2.2-5.3 4.7-7.3C11 6 11.6 5 12 3z\"/><path d=\"M9 20.5c-1.5-2-2-5-.5-8M15 20.5c1.5-2 2-5 .5-8M12 8v13\"/>","🥒":"<rect x=\"2\" y=\"9\" width=\"20\" height=\"6\" rx=\"3\" transform=\"rotate(-35 12 12)\"/><path d=\"M9.5 11.5h.01M13 9.5h.01M14.5 14h.01M10.5 15h.01\"/>","🫑":"<path d=\"M7 8.5C5 10 4.5 13 5.5 16c1 2.8 3 4.5 5 4.5.7 0 1-.4 1.5-.4s.8.4 1.5.4c2 0 4-1.7 5-4.5 1-3 .5-6-1.5-7.5-1.3-1-3-1-5-.6-2-.4-3.7-.4-5 .6z\"/><path d=\"M12 8V4.5c0-.8.7-1.5 1.5-1.5M12 12v8\"/>","🌽":"<path d=\"M12 2.5c2.2 0 3.5 2.5 3.5 6.5v3c0 2.5-1.5 4-3.5 4s-3.5-1.5-3.5-4V9c0-4 1.3-6.5 3.5-6.5z\"/><path d=\"M10 6h4M9.5 9h5M9.5 12h5M12 2.5V16\"/><path d=\"M8.5 12c-3 1-4.5 4-4.5 8 4 0 7-1.5 8-4M15.5 12c3 1 4.5 4 4.5 8-4 0-7-1.5-8-4\"/>","🫛":"<path d=\"M3.5 20.5C3 11 9 4 20.5 3.5 20 15 13 21.5 3.5 20.5z\"/><path d=\"M8 16h.01M12 12h.01M16 8h.01\"/>","🍆":"<path d=\"M15 7c3 1.5 4.5 4 4 7-.6 4-4.5 6.5-8.5 6.5-3.5 0-6-2-6-5 0-3 2.5-5 5.5-7.5 1.5-1.2 3.5-2 5-1z\"/><path d=\"M15 7c.3-2 1.5-3.5 3.5-4M13 5.5c1 1.5 2.2 2.5 4 3\"/>","🎃":"<path d=\"M12 7c-5 0-9 2.5-9 7s3.5 6.5 9 6.5S21 18.5 21 14s-4-7-9-7z\"/><path d=\"M12 7c-2 2.5-2 10 0 13.5M12 7c2 2.5 2 10 0 13.5M12 7V3.5c.5-.8 1.5-1 2.5-.5\"/>","🍓":"<path d=\"M12 21c-4-2-7-6-6.5-10C6 8.5 8.5 8 12 8s6 .5 6.5 3c.5 4-2.5 8-6.5 10z\"/><path d=\"M8.5 8C8 6 9.5 4.5 12 4.5S16 6 15.5 8M12 4.5V3M10 12h.01M14 12h.01M12 15h.01M9.5 15.5h.01M14.5 15.5h.01\"/>","🍍":"<path d=\"M12 22c-3 0-5-2.5-5-6s2-6.5 5-6.5 5 3 5 6.5-2 6-5 6z\"/><path d=\"M12 9.5c-1-2-3-3-4.5-3M12 9.5c1-2 3-3 4.5-3M12 9.5V3M8 13l8 6M16 13l-8 6\"/>","🍑":"<path d=\"M12 21c-4.5 0-8-3-8-7.5S7.5 6 12 6s8 3 8 7.5-3.5 7.5-8 7.5z\"/><path d=\"M12 6c0 5-.5 9 .5 15M12 6c1-2 3-3 5-3-.3 2-1.8 3.3-5 3\"/>","🥝":"<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><circle cx=\"12\" cy=\"12\" r=\"2.5\"/><path d=\"M12 3.5V9M12 15v5.5M3.5 12H9M15 12h5.5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3\"/>","🍝":"<path d=\"M3 12h18c0 4.5-4 8-9 8s-9-3.5-9-8z\"/><path d=\"M7.5 12c0-2 1-3.5 2.5-4.5M11 12c-.5-3 1-6 3.5-7M14.5 12c0-2.5 1.5-4 3.5-4.5\"/>","🍚":"<path d=\"M3 11h18c0 5-4 9-9 9s-9-4-9-9z\"/><path d=\"M6 11c0-3 2.5-5 6-5s6 2 6 5M10 8.5h.01M13 7.5h.01M14.5 9.5h.01M11.5 10h.01\"/>","🫓":"<circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"M8 9.5h.01M15.5 8.5h.01M10 14.5h.01M16 14h.01M12 11.5h.01\"/>","🌮":"<path d=\"M3 19a9 9 0 0 1 18 0z\"/><path d=\"M7 19a5 5 0 0 1 10 0\"/><path d=\"M6.5 9.5c1-1 2-1.5 3-1l1.5 1 1.5-1.5 1.5 1c1-.5 2-.3 3 1\"/>","🌯":"<rect x=\"2.5\" y=\"8\" width=\"19\" height=\"9\" rx=\"4.5\"/><path d=\"M9 8c2 2.5 2 6.5 0 9M15 8c-2 2.5-2 6.5 0 9\"/>","🥞":"<ellipse cx=\"12\" cy=\"7\" rx=\"8\" ry=\"3\"/><path d=\"M4 7v3c0 1.7 3.6 3 8 3s8-1.3 8-3V7M4 12v3c0 1.7 3.6 3 8 3s8-1.3 8-3v-3\"/>","🍯":"<path d=\"M7 8h10l1 2v8a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-8z\"/><path d=\"M7 8V5.5h10V8M6 12h12M10 12v3a1.5 1.5 0 0 0 3 0v-3\"/>","🫙":"<path d=\"M7 7h10v2c1.2.8 2 2 2 3.5V18a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-5.5C5 11 5.8 9.8 7 9z\"/><path d=\"M8 3.5h8V7H8zM8 13h8v4H8z\"/>","🫒":"<path d=\"M10 3h4v3l1.5 3c.4.8.5 1.5.5 2.5V19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-7.5c0-1 .1-1.7.5-2.5L10 6z\"/><path d=\"M8 13h8\"/>","🧃":"<path d=\"M7 9l2-4h6l2 4v12H7z\"/><path d=\"M7 9h10M14 5V2.5h3\"/>","💄":"<path d=\"M8 21h8v-7H8zM9 14v-4h6v4\"/><path d=\"M10 10V6l3-3 1 7\"/>","🧽":"<rect x=\"3\" y=\"8\" width=\"18\" height=\"10\" rx=\"3\"/><path d=\"M3 13h18M7 10.5h.01M11 10h.01M15 10.5h.01M10 15.5h.01M14.5 15.5h.01\"/>","🍳":"<circle cx=\"8\" cy=\"12\" r=\"5\"/><circle cx=\"8\" cy=\"12\" r=\"1.5\"/><path d=\"M8 7h11v10H8\"/>","🍠":"<path d=\"M5 11.5c0-4 4-6.5 8-6 4.5.5 7 4 6 8-1 4-5 6.5-9.5 6C5.5 19 5 14.5 5 11.5z\"/><path d=\"M10 11h.01M14.5 14h.01M12 8.5h.01\"/>"};
+function iconHtml(id,cls){
+  return `<svg class="pi${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_SVG[id]||ICON_SVG['📦']}</svg>`;
+}
+
 /* --- item detail menu --- */
 const COUNT_UNITS=['stuks','pak','blik','fles','pot','zak','tube','rol'];
 const SVG_PEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>';
@@ -1613,7 +1612,7 @@ function itemDetail(id){
   const partial=COUNT_UNITS.includes(it.unit||'stuks')&&(+it.qty||0)>1;
   openSheet(`<div class="dtop"><h2>${esc(it.name)}</h2><button class="x" data-a="close" aria-label="Sluiten">✕</button></div>
   ${it.brand?`<p class="hint" style="margin:0">${esc(it.brand)}</p>`:''}
-  <div class="dhead"><div class="dimg" aria-hidden="true">${visual(it,'dphoto')}</div>
+  <div class="dhead"><div class="dimg" aria-hidden="true">${iconHtml(iconFor(it))}</div>
     <div class="dgrid">
       <div><div class="k">${k1}</div><div class="v">${esc(v1)}</div>${s1?`<div class="s ${c1}">${esc(s1)}</div>`:''}</div>
       <div><div class="k">Categorie</div><div class="v">${esc(it.category||'Overig')}</div></div>
@@ -1640,61 +1639,6 @@ async function writeOff(id,as){
     if(cur){cur.qty=snapshot.qty;await DB.put('items',cur);}else{S.items.push(snapshot);await DB.put('items',snapshot);}
     S.log=S.log.filter(e=>e.id!==entry.id);await saveSettings();render();toast('Afboeking ongedaan gemaakt');
   });
-}
-
-/* --- product photos (real packshots from Open Food Facts, or your own photo) --- */
-const productDomains=s=>s==='eten'?['openfoodfacts','openbeautyfacts','openproductsfacts']:s==='verzorging'?['openbeautyfacts','openfoodfacts','openproductsfacts']:['openproductsfacts','openbeautyfacts','openfoodfacts'];
-const hasPhoto=i=>!!(i&&(i.photo||i.photoUrl));
-function visual(i,cls){
-  const src=i.photo||i.photoUrl,em=iconFor(i);
-  return src?`<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" data-e="${esc(em)}" onerror="this.replaceWith(document.createTextNode(this.dataset.e))">`:em;
-}
-function canLoadImage(u){return new Promise(res=>{const i=new Image(),t=setTimeout(()=>res(false),6000);i.onload=()=>{clearTimeout(t);res(true);};i.onerror=()=>{clearTimeout(t);res(false);};i.src=u;});}
-async function photoFromUrl(u){
-  try{
-    const r=await fetchWithTimeout(u,12000);
-    if(!r.ok)return null;
-    const x=await blobToJpegB64(await r.blob(),240,.8);
-    return x?{photo:'data:image/jpeg;base64,'+x}:null;
-  }catch(e){
-    /* the site does not allow copying the picture: show it straight from there while online */
-    return (await canLoadImage(u))?{photoUrl:u}:null;
-  }
-}
-async function fetchProductPhoto(barcode,section){
-  for(const d of productDomains(section||'eten')){
-    try{
-      const r=await fetchWithTimeout(`https://world.${d}.org/api/v2/product/${barcode}.json?fields=image_front_small_url,image_small_url,image_url`,10000);
-      const j=await r.json();
-      if(j&&j.status===1&&j.product){
-        const u=j.product.image_front_small_url||j.product.image_small_url||j.product.image_url;
-        if(u)return await photoFromUrl(u);
-      }
-    }catch(e){}
-  }
-  return null;
-}
-let photoRun=false;
-async function fetchAllPhotos(){
-  if(photoRun)return;
-  const todo=S.items.filter(i=>i.barcode&&!hasPhoto(i));
-  if(!todo.length){toast('Alle producten met een barcode hebben al een foto');return;}
-  photoRun=true;let ok=0,n=0;const seen={};
-  for(const it of todo){
-    n++;toast(`Foto's ophalen… ${n} van ${todo.length}`);
-    let r=seen[it.barcode];
-    if(r===undefined){r=await fetchProductPhoto(it.barcode,secOf(it));seen[it.barcode]=r;await new Promise(x=>setTimeout(x,250));}
-    if(r){Object.assign(it,r);ok++;await DB.put('items',it);}
-    if(n%4===0&&S.view==='voorraad')render();
-  }
-  photoRun=false;render();
-  toast(ok?`${ok} van ${todo.length} foto's opgehaald`:'Geen foto’s gevonden. Ben je online?');
-}
-let formPhoto={photo:'',photoUrl:''};
-function updatePhotoUi(){
-  const hp=!!(formPhoto.photo||formPhoto.photoUrl);
-  const c=$('#photoClear');if(c)c.hidden=!hp;
-  updateIconPrev();
 }
 
 /* --- barcode scanning --- */
@@ -1728,10 +1672,10 @@ async function handleCode(raw){
   await stopScan();
   if(ex){closeSheet();itemForm({...ex,qty:(+ex.qty||0)+(stepFor(ex.unit)>=1?1:stepFor(ex.unit))},true,true);toast('Staat al in je voorraad: aantal +1, tik op Opslaan');return;}
   let p=null;
-  const doms=productDomains(S.section);
+  const doms=S.section==='eten'?['openfoodfacts','openbeautyfacts','openproductsfacts']:S.section==='verzorging'?['openbeautyfacts','openfoodfacts','openproductsfacts']:['openproductsfacts','openbeautyfacts','openfoodfacts'];
   for(const d of doms){
     try{
-      const r=await fetch(`https://world.${d}.org/api/v2/product/${code}.json?fields=product_name,product_name_nl,generic_name_nl,brands,quantity,categories_tags,image_front_small_url,image_small_url`);
+      const r=await fetch(`https://world.${d}.org/api/v2/product/${code}.json?fields=product_name,product_name_nl,generic_name_nl,brands,quantity,categories_tags`);
       const j=await r.json();
       if(j&&j.status===1&&j.product){p=j.product;p._src=d;break;}
     }catch(e){}
@@ -1741,9 +1685,7 @@ async function handleCode(raw){
     const name=(p.product_name_nl||p.product_name||p.generic_name_nl||'').trim();
     const sec=(S.section==='eten'&&p._src==='openbeautyfacts')?'verzorging':(S.section==='eten'&&p._src==='openproductsfacts')?'overig':S.section;
     if(sec!==S.section){S.section=sec;S.cat='';}
-    const pu=p.image_front_small_url||p.image_small_url;
-    const ph=pu?await photoFromUrl(pu):{};
-    itemForm({...ph,name,brand:(p.brands||'').split(',')[0].trim(),size:p.quantity||'',qty:1,unit:'stuks',section:sec,category:sec==='eten'?guessCategory(p.categories_tags):guessCatIn(sec,name),barcode:code,expiry:''},true);
+    itemForm({name,brand:(p.brands||'').split(',')[0].trim(),size:p.quantity||'',qty:1,unit:'stuks',section:sec,category:sec==='eten'?guessCategory(p.categories_tags):guessCatIn(sec,name),barcode:code,expiry:''},true);
     if(!name)toast('Geen naam gevonden, vul die zelf in');
   }else{
     itemForm(newItem({name:'',barcode:code}),true);
@@ -1863,16 +1805,12 @@ function parseStaples(t){return [...new Set(String(t).split(/[\n,]+/).map(s=>s.t
 
 function pickerHtml(q,cur){
   q=norm(q||'').trim();
-  return ICON_INDEX.filter(ic=>!q||norm(ic.label).includes(q)||ic.kws.some(k=>k.kw.includes(q))).map(ic=>`<button type="button" class="pick" data-a="pick-icon" data-e="${ic.e}" aria-pressed="${cur===ic.e}" aria-label="${esc(ic.label)}"><span class="e">${ic.e}</span><span>${esc(ic.label)}</span></button>`).join('')||'<p class="hint">Niets gevonden</p>';
+  return ICON_INDEX.filter(ic=>!q||norm(ic.label).includes(q)||ic.kws.some(k=>k.kw.includes(q))).map(ic=>`<button type="button" class="pick" data-a="pick-icon" data-e="${ic.e}" aria-pressed="${cur===ic.e}" aria-label="${esc(ic.label)}"><span class="e">${iconHtml(ic.e)}</span><span>${esc(ic.label)}</span></button>`).join('')||'<p class="hint">Niets gevonden</p>';
 }
 function updateIconPrev(){
   const hi=$('#f-icon');if(!hi)return;
-  const em=hi.value||iconFor({name:$('#f-name').value,category:$('#f-cat').value});
-  const src=formPhoto.photo||formPhoto.photoUrl;
-  const pv=$('#icoPrev');
-  if(src){pv.innerHTML=`<img src="${esc(src)}" alt="" data-e="${esc(em)}" onerror="this.replaceWith(document.createTextNode(this.dataset.e))">`;}
-  else pv.textContent=em;
-  $('#icoMode').textContent=src?'Foto':(hi.value?'Zelf gekozen':'Automatisch gekozen op naam');
+  $('#icoPrev').innerHTML=iconHtml(hi.value||iconFor({name:$('#f-name').value,category:$('#f-cat').value}));
+  $('#icoMode').textContent=hi.value?'Zelf gekozen':'Automatisch gekozen op naam';
 }
 /* --- import mapping (own backup format and the older "voorraad" app export) --- */
 function guessByName(n){
@@ -1887,7 +1825,7 @@ function mapImportItem(x){
   const section=SECTIONS.some(s=>s.id===x.section)?x.section:guessSection(name);
   const added=x.added||x.createdAt||Date.now();
   const category=(CATS_BY[section]||[]).includes(x.category)?x.category:(section==='eten'?guessByName(name):guessCatIn(section,name));
-  return {id:x.id||uid(),name,brand:x.brand||'',size:x.size||x.productQuantity||'',qty:qty>0?qty:1,unit:x.unit||'stuks',icon:x.icon||'',photo:x.photo||'',photoUrl:x.photoUrl||'',section,category,
+  return {id:x.id||uid(),name,brand:x.brand||'',size:x.size||x.productQuantity||'',qty:qty>0?qty:1,unit:x.unit||'stuks',icon:x.icon||'',section,category,
     expiry:section==='eten'?(x.expiry||x.expiryDate||''):'',bought:section==='verzorging'?(x.bought||isoFromMs(added)):'',barcode:String(x.barcode||''),added};
 }
 function migrateItems(){
@@ -1984,16 +1922,6 @@ async function handleClick(e){
       const autoSide=auto==='missing'?'missing':'have';
       if(next===autoSide)delete S.overrides[k];else S.overrides[k]=next;
       await saveSettings();recipeDetail(id);render();break;}
-    case 'photo-pick':$('#photoFile').click();break;
-    case 'photo-clear':formPhoto={photo:'',photoUrl:''};updatePhotoUi();break;
-    case 'photo-fetch':{
-      const bc=String(($('#itemForm').elements['barcode']||{}).value||'');
-      if(!bc){toast('Dit product heeft geen barcode. Gebruik “Foto” om er zelf een te maken.');break;}
-      toast('Foto zoeken…');
-      const r=await fetchProductPhoto(bc,$('#f-section').value);
-      if(r){formPhoto={photo:r.photo||'',photoUrl:r.photoUrl||''};updatePhotoUi();toast('Foto gevonden');}else toast('Geen foto gevonden voor deze barcode');
-      break;}
-    case 'photos-fetch':fetchAllPhotos();break;
     case 'toggle-picker':{const pk=$('#picker');pk.hidden=!pk.hidden;if(!pk.hidden){$('#pgrid').innerHTML=pickerHtml($('#iconQ').value,$('#f-icon').value);}break;}
     case 'pick-icon':$('#f-icon').value=b.dataset.e;$('#picker').hidden=true;updateIconPrev();break;
     case 'icon-auto':$('#f-icon').value='';$('#picker').hidden=true;updateIconPrev();break;
@@ -2023,11 +1951,6 @@ document.addEventListener('change',e=>{
   else if(e.target.id==='rsort'){S.rsort=e.target.value;render();}
   else if(e.target.id==='f-cat')updateIconPrev();
   else if(e.target.id==='f-section')syncSection();
-  else if(e.target.id==='photoFile'){
-    const f=e.target.files&&e.target.files[0];if(!f)return;
-    blobToJpegB64(f,240,.8).then(x=>{if(x){formPhoto={photo:'data:image/jpeg;base64,'+x,photoUrl:''};updatePhotoUi();}else toast('Deze foto kon niet worden gelezen');});
-    e.target.value='';
-  }
 });
 async function handleSubmit(e){
   const id=e.target.id;
