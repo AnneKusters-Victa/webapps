@@ -120,9 +120,14 @@ ul.list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .pill.bad{background:var(--bad-soft);color:var(--bad)}
 .pill.warn{background:var(--warn-soft);color:var(--warn)}
 .tq{font-weight:700;font-size:.8rem;color:var(--muted);white-space:nowrap;margin-left:auto}
-.tile-ico{flex:1;display:grid;place-items:center;font-size:clamp(2.4rem,12vw,3.6rem);line-height:1;padding:4px 0}
+.tile-ico{position:relative;min-height:84px;flex:1;display:grid;place-items:center;font-size:clamp(2.4rem,12vw,3.6rem);line-height:1;padding:4px 0}
 .tile-name{font-weight:600;font-size:.86rem;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.4em;overflow-wrap:anywhere}
 .tile.empty{opacity:.5}
+.tile-ico img.tphoto{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:12px;padding:2px}
+.dimg{overflow:hidden}
+.dimg img.dphoto{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+.ico.big{overflow:hidden}
+.ico.big img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
 .searchrow{display:flex;gap:8px;margin-bottom:12px}
 .searchrow input{flex:1;min-width:0;border-radius:16px;min-height:50px;padding:0 16px}
 .filterbtn{flex:none;position:relative;width:50px;min-height:50px;border-radius:16px;border:1px solid var(--line-strong);background:var(--card);display:grid;place-items:center;color:var(--ink)}
@@ -1030,7 +1035,7 @@ function itemRow(i){
   const label=[i.name,qb&&('aantal '+qb),pl&&pl.label].filter(Boolean).join(', ');
   return `<li><button class="tile${(+i.qty||0)<=0?' empty':''}" data-a="item-detail" data-id="${esc(i.id)}" aria-label="${esc(label)}">
     <span class="tile-top">${pl?`<span class="pill ${pl.cls}">${esc(pl.t)}</span>`:''}${qb?`<span class="tq">${esc(qb)}</span>`:''}</span>
-    <span class="tile-ico" aria-hidden="true">${iconFor(i)}</span>
+    <span class="tile-ico" aria-hidden="true">${visual(i,'tphoto')}</span>
     <span class="tile-name">${esc(i.name)}</span></button></li>`;
 }
 function sortedItems(){
@@ -1202,12 +1207,19 @@ function updateMeerSpy(){
 let spyRaf=0;
 window.addEventListener('scroll',()=>{if(S.view==='meer'&&!spyRaf)spyRaf=requestAnimationFrame(()=>{spyRaf=0;updateMeerSpy();});},{passive:true});
 window.addEventListener('resize',()=>document.documentElement.style.setProperty('--hdr',hdrH()+'px'));
+function photoSection(){
+  const withP=S.items.filter(hasPhoto).length,todo=S.items.filter(i=>i.barcode&&!hasPhoto(i)).length;
+  return `<p class="hint" style="margin-top:0">Producten krijgen een echte foto uit Open Food Facts. Dat gebeurt bij het scannen en hier voor producten die je al had. Alleen de barcode wordt verstuurd. Zonder foto zie je het plaatje op basis van de naam. Je kunt bij een product ook zelf een foto maken.</p>
+  <p style="margin:0 0 8px"><b>${withP}</b> van ${S.items.length} producten hebben een foto${todo?`, bij <b>${todo}</b> kan er nog een worden opgehaald`:''}.</p>
+  <div class="actions"><button class="btn primary" data-a="photos-fetch" ${todo?'':'disabled'}>Foto’s ophalen${todo?` (${todo})`:''}</button></div>`;
+}
 function viewMeer(){
   $('#pageSub').textContent='';
   const grp=(id,body)=>`<section class="msec" id="m-${id}" aria-labelledby="mh-${id}"><h2 class="group" id="mh-${id}">${esc(MEER_PAGES.find(p=>p.id===id).label)}</h2>${body}</section>`;
   return grp('instellingen',`<div class="section"><h3>Basisvoorraad</h3><p class="hint">Dit heb je altijd in huis. Deze ingrediënten tellen bij recepten als aanwezig, ook als ze niet in je voorraad staan. Één per regel of gescheiden door komma’s.</p>
       <textarea id="staples" aria-label="Basisvoorraad">${esc(S.staples.join('\n'))}</textarea>
       <div class="actions"><button class="btn primary" data-a="save-staples">Opslaan</button><button class="btn" data-a="reset-staples">Standaardlijst</button></div></div>
+    <div class="section"><h3>Productfoto's</h3>${photoSection()}</div>
     <div class="section"><h3>Aantal personen</h3><p class="hint">Alle recepten rekenen om naar dit aantal personen. Laat leeg om elk recept in zijn eigen aantal te tonen. In een recept kun je het aantal nog steeds per recept wijzigen.</p>
       <label for="defServ">Standaard aantal personen</label><input id="defServ" type="number" min="1" max="50" inputmode="numeric" placeholder="Zoals in het recept" value="${S.defaultServings||''}">
       <div class="actions"><button class="btn primary" data-a="save-defserv">Opslaan</button></div></div>`)
@@ -1217,7 +1229,7 @@ function viewMeer(){
   +grp('backup',`<div class="section"><h3>Back-up van je gegevens</h3><p class="hint">Maak een back-up van je voorraad, sterrenbeoordelingen, boodschappenlijst, weekplan en instellingen als JSON-bestand, of zet een back-up terug. Je recepten zelf bewaar je via de Mela-export.</p>
       <div class="actions"><button class="btn" data-a="export-stock" ${(S.items.length||Object.keys(S.ratings).length)?'':'disabled'}>Back-up maken</button><button class="btn" data-a="import-stock">Back-up terugzetten</button></div></div>`)
   +grp('afgeboekt',`<div class="section"><h3>Gebruikt en weggegooid</h3>${logSummary()}</div>`)
-  +grp('over',`<div class="section"><h3>Over deze app</h3><p class="hint">Alles wordt bewaard in deze browser op dit apparaat. Productnamen komen van Open Food Facts; alleen de barcode wordt daarvoor verstuurd. Cache wissen of een andere browser gebruiken betekent een lege app, dus maak af en toe een back-up.</p></div>`);
+  +grp('over',`<div class="section"><h3>Over deze app</h3><p class="hint">Alles wordt bewaard in deze browser op dit apparaat. Productnamen komen van Open Food Facts; alleen de barcode wordt daarvoor verstuurd. Productfoto’s komen van Open Food Facts (licentie CC BY-SA). Cache wissen of een andere browser gebruiken betekent een lege app, dus maak af en toe een back-up.</p></div>`);
 }
 
 function render(){
@@ -1264,6 +1276,7 @@ function syncSection(){
 }
 function itemForm(it,isNew,existing){
   const sec=it.section||'eten';
+  formPhoto={photo:it.photo||'',photoUrl:it.photoUrl||''};
   if(isNew&&!it.bought)it={...it,bought:todayStr()};
   const unitSel=UNIT_OPTS.map(u=>`<option${(it.unit||'stuks')===u?' selected':''}>${u}</option>`).join('');
   const secSel=SECTIONS.map(s=>`<option value="${s.id}"${sec===s.id?' selected':''}>${s.label}</option>`).join('');
@@ -1273,7 +1286,7 @@ function itemForm(it,isNew,existing){
     <label for="f-section">Soort</label><select id="f-section" name="section">${secSel}</select>
     <label for="f-name">Naam</label><input id="f-name" name="name" type="text" required value="${esc(it.name||'')}">
     <input type="hidden" id="f-icon" name="icon" value="${esc(it.icon||'')}">
-    <div class="icon-row"><span class="ico big" id="icoPrev" aria-hidden="true">${iconFor(it)}</span><button type="button" class="btn small" data-a="toggle-picker">Afbeelding kiezen</button><button type="button" class="btn small" data-a="icon-auto">Automatisch</button><span class="hint" id="icoMode">${it.icon?'Zelf gekozen':'Automatisch gekozen op naam'}</span></div>
+    <div class="icon-row"><span class="ico big" id="icoPrev" aria-hidden="true">${visual(it,'pphoto')}</span><button type="button" class="btn small" data-a="photo-pick">Foto</button><button type="button" class="btn small" data-a="photo-fetch">Foto zoeken</button><button type="button" class="btn small" data-a="photo-clear" id="photoClear" ${hasPhoto(it)?'':'hidden'}>Foto wissen</button><button type="button" class="btn small" data-a="toggle-picker">Afbeelding kiezen</button><button type="button" class="btn small" data-a="icon-auto">Automatisch</button><span class="hint" id="icoMode">${hasPhoto(it)?'Foto':it.icon?'Zelf gekozen':'Automatisch gekozen op naam'}</span><input type="file" id="photoFile" accept="image/*" hidden></div>
     <div class="picker" id="picker" hidden><input type="search" id="iconQ" placeholder="Zoek een afbeelding" aria-label="Zoek een afbeelding"><div class="pgrid" id="pgrid"></div></div>
     <div class="grid2"><div><label for="f-brand">Merk</label><input id="f-brand" name="brand" type="text" value="${esc(it.brand||'')}"></div>
     <div><label for="f-size">Inhoud</label><input id="f-size" name="size" type="text" placeholder="bijv. 400 g" value="${esc(it.size||'')}"></div></div>
@@ -1297,7 +1310,7 @@ function itemForm(it,isNew,existing){
     const exp=secV==='eten'?parseDate(f.get('expiry')):'';
     const bou=secV==='verzorging'?parseDate(f.get('bought')):'';
     if(exp===null||bou===null){toast('Datum niet herkend. Gebruik dd/mm/jjjj');return;}
-    const o={id:f.get('id')||uid(),name:f.get('name').trim(),icon:f.get('icon')||'',section:secV,brand:f.get('brand').trim(),size:f.get('size').trim(),qty:parseFloat(f.get('qty'))||0,unit:f.get('unit'),category:f.get('category'),expiry:exp,bought:bou,barcode:String(f.get('barcode')||'').replace(/\D/g,''),added:+f.get('added')||Date.now()};
+    const o={id:f.get('id')||uid(),name:f.get('name').trim(),icon:f.get('icon')||'',photo:formPhoto.photo,photoUrl:formPhoto.photoUrl,section:secV,brand:f.get('brand').trim(),size:f.get('size').trim(),qty:parseFloat(f.get('qty'))||0,unit:f.get('unit'),category:f.get('category'),expiry:exp,bought:bou,barcode:String(f.get('barcode')||'').replace(/\D/g,''),added:+f.get('added')||Date.now()};
     if(!o.name)return;
     if(o.qty<=0){
       if(S.items.some(x=>x.id===o.id)&&confirm(`${o.name} is op. Uit de voorraad verwijderen?`)){S.items=S.items.filter(x=>x.id!==o.id);await DB.del('items',o.id);closeSheet();render();toast('Verwijderd');return;}
@@ -1470,8 +1483,10 @@ async function fetchHtml(url){
   }
   return null;
 }
-function blobToJpegB64(blob){return new Promise(res=>{const u=URL.createObjectURL(blob),img=new Image();
-  img.onload=()=>{try{const s=Math.min(1,1000/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.82).split(',')[1]);}catch(e){res(null);}URL.revokeObjectURL(u);};
+function blobToJpegB64(blob,max,q){return new Promise(res0=>{
+  let done=false;const timer=setTimeout(()=>res(null),8000);const res=v=>{if(done)return;done=true;clearTimeout(timer);res0(v);};
+  const u=URL.createObjectURL(blob),img=new Image();
+  img.onload=()=>{try{const s=Math.min(1,(max||1000)/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q||.82).split(',')[1]);}catch(e){res(null);}URL.revokeObjectURL(u);};
   img.onerror=()=>{URL.revokeObjectURL(u);res(null);};img.src=u;});}
 async function fetchImageB64(url){
   for(const px of PROXIES){
@@ -1598,7 +1613,7 @@ function itemDetail(id){
   const partial=COUNT_UNITS.includes(it.unit||'stuks')&&(+it.qty||0)>1;
   openSheet(`<div class="dtop"><h2>${esc(it.name)}</h2><button class="x" data-a="close" aria-label="Sluiten">✕</button></div>
   ${it.brand?`<p class="hint" style="margin:0">${esc(it.brand)}</p>`:''}
-  <div class="dhead"><div class="dimg" aria-hidden="true">${iconFor(it)}</div>
+  <div class="dhead"><div class="dimg" aria-hidden="true">${visual(it,'dphoto')}</div>
     <div class="dgrid">
       <div><div class="k">${k1}</div><div class="v">${esc(v1)}</div>${s1?`<div class="s ${c1}">${esc(s1)}</div>`:''}</div>
       <div><div class="k">Categorie</div><div class="v">${esc(it.category||'Overig')}</div></div>
@@ -1625,6 +1640,61 @@ async function writeOff(id,as){
     if(cur){cur.qty=snapshot.qty;await DB.put('items',cur);}else{S.items.push(snapshot);await DB.put('items',snapshot);}
     S.log=S.log.filter(e=>e.id!==entry.id);await saveSettings();render();toast('Afboeking ongedaan gemaakt');
   });
+}
+
+/* --- product photos (real packshots from Open Food Facts, or your own photo) --- */
+const productDomains=s=>s==='eten'?['openfoodfacts','openbeautyfacts','openproductsfacts']:s==='verzorging'?['openbeautyfacts','openfoodfacts','openproductsfacts']:['openproductsfacts','openbeautyfacts','openfoodfacts'];
+const hasPhoto=i=>!!(i&&(i.photo||i.photoUrl));
+function visual(i,cls){
+  const src=i.photo||i.photoUrl,em=iconFor(i);
+  return src?`<img class="${cls}" src="${esc(src)}" alt="" loading="lazy" data-e="${esc(em)}" onerror="this.replaceWith(document.createTextNode(this.dataset.e))">`:em;
+}
+function canLoadImage(u){return new Promise(res=>{const i=new Image(),t=setTimeout(()=>res(false),6000);i.onload=()=>{clearTimeout(t);res(true);};i.onerror=()=>{clearTimeout(t);res(false);};i.src=u;});}
+async function photoFromUrl(u){
+  try{
+    const r=await fetchWithTimeout(u,12000);
+    if(!r.ok)return null;
+    const x=await blobToJpegB64(await r.blob(),240,.8);
+    return x?{photo:'data:image/jpeg;base64,'+x}:null;
+  }catch(e){
+    /* the site does not allow copying the picture: show it straight from there while online */
+    return (await canLoadImage(u))?{photoUrl:u}:null;
+  }
+}
+async function fetchProductPhoto(barcode,section){
+  for(const d of productDomains(section||'eten')){
+    try{
+      const r=await fetchWithTimeout(`https://world.${d}.org/api/v2/product/${barcode}.json?fields=image_front_small_url,image_small_url,image_url`,10000);
+      const j=await r.json();
+      if(j&&j.status===1&&j.product){
+        const u=j.product.image_front_small_url||j.product.image_small_url||j.product.image_url;
+        if(u)return await photoFromUrl(u);
+      }
+    }catch(e){}
+  }
+  return null;
+}
+let photoRun=false;
+async function fetchAllPhotos(){
+  if(photoRun)return;
+  const todo=S.items.filter(i=>i.barcode&&!hasPhoto(i));
+  if(!todo.length){toast('Alle producten met een barcode hebben al een foto');return;}
+  photoRun=true;let ok=0,n=0;const seen={};
+  for(const it of todo){
+    n++;toast(`Foto's ophalen… ${n} van ${todo.length}`);
+    let r=seen[it.barcode];
+    if(r===undefined){r=await fetchProductPhoto(it.barcode,secOf(it));seen[it.barcode]=r;await new Promise(x=>setTimeout(x,250));}
+    if(r){Object.assign(it,r);ok++;await DB.put('items',it);}
+    if(n%4===0&&S.view==='voorraad')render();
+  }
+  photoRun=false;render();
+  toast(ok?`${ok} van ${todo.length} foto's opgehaald`:'Geen foto’s gevonden. Ben je online?');
+}
+let formPhoto={photo:'',photoUrl:''};
+function updatePhotoUi(){
+  const hp=!!(formPhoto.photo||formPhoto.photoUrl);
+  const c=$('#photoClear');if(c)c.hidden=!hp;
+  updateIconPrev();
 }
 
 /* --- barcode scanning --- */
@@ -1658,10 +1728,10 @@ async function handleCode(raw){
   await stopScan();
   if(ex){closeSheet();itemForm({...ex,qty:(+ex.qty||0)+(stepFor(ex.unit)>=1?1:stepFor(ex.unit))},true,true);toast('Staat al in je voorraad: aantal +1, tik op Opslaan');return;}
   let p=null;
-  const doms=S.section==='eten'?['openfoodfacts','openbeautyfacts','openproductsfacts']:S.section==='verzorging'?['openbeautyfacts','openfoodfacts','openproductsfacts']:['openproductsfacts','openbeautyfacts','openfoodfacts'];
+  const doms=productDomains(S.section);
   for(const d of doms){
     try{
-      const r=await fetch(`https://world.${d}.org/api/v2/product/${code}.json?fields=product_name,product_name_nl,generic_name_nl,brands,quantity,categories_tags`);
+      const r=await fetch(`https://world.${d}.org/api/v2/product/${code}.json?fields=product_name,product_name_nl,generic_name_nl,brands,quantity,categories_tags,image_front_small_url,image_small_url`);
       const j=await r.json();
       if(j&&j.status===1&&j.product){p=j.product;p._src=d;break;}
     }catch(e){}
@@ -1671,7 +1741,9 @@ async function handleCode(raw){
     const name=(p.product_name_nl||p.product_name||p.generic_name_nl||'').trim();
     const sec=(S.section==='eten'&&p._src==='openbeautyfacts')?'verzorging':(S.section==='eten'&&p._src==='openproductsfacts')?'overig':S.section;
     if(sec!==S.section){S.section=sec;S.cat='';}
-    itemForm({name,brand:(p.brands||'').split(',')[0].trim(),size:p.quantity||'',qty:1,unit:'stuks',section:sec,category:sec==='eten'?guessCategory(p.categories_tags):guessCatIn(sec,name),barcode:code,expiry:''},true);
+    const pu=p.image_front_small_url||p.image_small_url;
+    const ph=pu?await photoFromUrl(pu):{};
+    itemForm({...ph,name,brand:(p.brands||'').split(',')[0].trim(),size:p.quantity||'',qty:1,unit:'stuks',section:sec,category:sec==='eten'?guessCategory(p.categories_tags):guessCatIn(sec,name),barcode:code,expiry:''},true);
     if(!name)toast('Geen naam gevonden, vul die zelf in');
   }else{
     itemForm(newItem({name:'',barcode:code}),true);
@@ -1795,8 +1867,12 @@ function pickerHtml(q,cur){
 }
 function updateIconPrev(){
   const hi=$('#f-icon');if(!hi)return;
-  $('#icoPrev').textContent=hi.value||iconFor({name:$('#f-name').value,category:$('#f-cat').value});
-  $('#icoMode').textContent=hi.value?'Zelf gekozen':'Automatisch gekozen op naam';
+  const em=hi.value||iconFor({name:$('#f-name').value,category:$('#f-cat').value});
+  const src=formPhoto.photo||formPhoto.photoUrl;
+  const pv=$('#icoPrev');
+  if(src){pv.innerHTML=`<img src="${esc(src)}" alt="" data-e="${esc(em)}" onerror="this.replaceWith(document.createTextNode(this.dataset.e))">`;}
+  else pv.textContent=em;
+  $('#icoMode').textContent=src?'Foto':(hi.value?'Zelf gekozen':'Automatisch gekozen op naam');
 }
 /* --- import mapping (own backup format and the older "voorraad" app export) --- */
 function guessByName(n){
@@ -1811,7 +1887,7 @@ function mapImportItem(x){
   const section=SECTIONS.some(s=>s.id===x.section)?x.section:guessSection(name);
   const added=x.added||x.createdAt||Date.now();
   const category=(CATS_BY[section]||[]).includes(x.category)?x.category:(section==='eten'?guessByName(name):guessCatIn(section,name));
-  return {id:x.id||uid(),name,brand:x.brand||'',size:x.size||x.productQuantity||'',qty:qty>0?qty:1,unit:x.unit||'stuks',icon:x.icon||'',section,category,
+  return {id:x.id||uid(),name,brand:x.brand||'',size:x.size||x.productQuantity||'',qty:qty>0?qty:1,unit:x.unit||'stuks',icon:x.icon||'',photo:x.photo||'',photoUrl:x.photoUrl||'',section,category,
     expiry:section==='eten'?(x.expiry||x.expiryDate||''):'',bought:section==='verzorging'?(x.bought||isoFromMs(added)):'',barcode:String(x.barcode||''),added};
 }
 function migrateItems(){
@@ -1908,6 +1984,16 @@ async function handleClick(e){
       const autoSide=auto==='missing'?'missing':'have';
       if(next===autoSide)delete S.overrides[k];else S.overrides[k]=next;
       await saveSettings();recipeDetail(id);render();break;}
+    case 'photo-pick':$('#photoFile').click();break;
+    case 'photo-clear':formPhoto={photo:'',photoUrl:''};updatePhotoUi();break;
+    case 'photo-fetch':{
+      const bc=String(($('#itemForm').elements['barcode']||{}).value||'');
+      if(!bc){toast('Dit product heeft geen barcode. Gebruik “Foto” om er zelf een te maken.');break;}
+      toast('Foto zoeken…');
+      const r=await fetchProductPhoto(bc,$('#f-section').value);
+      if(r){formPhoto={photo:r.photo||'',photoUrl:r.photoUrl||''};updatePhotoUi();toast('Foto gevonden');}else toast('Geen foto gevonden voor deze barcode');
+      break;}
+    case 'photos-fetch':fetchAllPhotos();break;
     case 'toggle-picker':{const pk=$('#picker');pk.hidden=!pk.hidden;if(!pk.hidden){$('#pgrid').innerHTML=pickerHtml($('#iconQ').value,$('#f-icon').value);}break;}
     case 'pick-icon':$('#f-icon').value=b.dataset.e;$('#picker').hidden=true;updateIconPrev();break;
     case 'icon-auto':$('#f-icon').value='';$('#picker').hidden=true;updateIconPrev();break;
@@ -1937,6 +2023,11 @@ document.addEventListener('change',e=>{
   else if(e.target.id==='rsort'){S.rsort=e.target.value;render();}
   else if(e.target.id==='f-cat')updateIconPrev();
   else if(e.target.id==='f-section')syncSection();
+  else if(e.target.id==='photoFile'){
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    blobToJpegB64(f,240,.8).then(x=>{if(x){formPhoto={photo:'data:image/jpeg;base64,'+x,photoUrl:''};updatePhotoUi();}else toast('Deze foto kon niet worden gelezen');});
+    e.target.value='';
+  }
 });
 async function handleSubmit(e){
   const id=e.target.id;
